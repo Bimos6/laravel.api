@@ -11,14 +11,24 @@ class GetPostsAction
     {
         $query = Post::with('user');
 
-        return $this->applyFilters($query, $filters)->paginate(
-            $filters['limit'] ?? 15
-        );
+        if (!empty($filters['user_id'])) {
+            $query->where('user_id', $filters['user_id']);
+        }
+
+        $sortField = $filters['sort_by'] ?? 'created_at';
+        $sortOrder = $filters['sort_order'] ?? 'desc';
+
+        if (in_array($sortField, ['created_at', 'title'])) {
+            $query->orderBy($sortField, $sortOrder);
+        }
+
+        $limit = $filters['limit'] ?? 15;
+        
+        return $query->paginate($limit);
     }
 
     private function applyFilters($query, array $filters)
     {
-        // Фильтрация по дате
         if (!empty($filters['date_from'])) {
             $query->where('created_at', '>=', $filters['date_from']);
         }
@@ -27,7 +37,6 @@ class GetPostsAction
             $query->where('created_at', '<=', $filters['date_to']);
         }
 
-        // Сортировка
         $sortField = $filters['sort_by'] ?? 'created_at';
         $sortOrder = $filters['sort_order'] ?? 'desc';
 

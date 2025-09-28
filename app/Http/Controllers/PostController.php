@@ -34,9 +34,8 @@ class PostController extends Controller
         PostListRequest $request,
         GetPostsAction $getPostsAction
     ): AnonymousResourceCollection {
-        $filters = array_merge($request->validated(), [
-            'user_id' => $request->user()->id
-        ]);
+        $filters = $request->validated();
+        $filters['user_id'] = $request->user()->id;
         
         $posts = $getPostsAction->execute($filters);
 
