@@ -2,34 +2,40 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Auth\UserRegistrationAction;
+use App\Actions\Auth\UserLoginAction;
+use App\Actions\Auth\CreateTokenAction;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
-use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 
 class AuthController extends Controller
 {
-    public function __construct(private AuthService $authService)
-    {
-    }
-
-    public function login(LoginRequest $request): JsonResponse
-    {
-        $result = $this->authService->login($request->validated());
-
-        return response()->json([
-            'user' => $result['user'],
-            'access_token' => $result['access_token'],
-        ]);
-    }
-
-    public function register(RegisterRequest $request): JsonResponse
-    {
-        $result = $this->authService->register($request->validated());
+    public function register(
+        RegisterRequest $request,
+        UserRegistrationAction $registerAction,
+        CreateTokenAction $createTokenAction
+    ): JsonResponse {
+        $user = $registerAction->execute($request->validated());
+        $token = $createTokenAction->execute($user);
 
         return response()->json([
-            'user' => $result['user'],
-            'access_token' => $result['access_token'],
+            'user' => $user,
+            'access_token' => $token->plainTextToken,
         ], 201);
+    }
+
+    public function login(
+        LoginRequest $request,
+        UserLoginAction $loginAction,
+        CreateTokenAction $createTokenAction
+    ): JsonResponse {
+        $user = $loginAction->execute($request->validated());
+        $token = $createTokenAction->execute($user);
+
+        return response()->json([
+            'user' => $user,
+            'access_token' => $token->plainTextToken,
+        ]);
     }
 }
