@@ -119,6 +119,9 @@ class UserEditScreen extends Screen
         ];
     }
 
+    /**
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function save(User $user, Request $request)
     {
         $request->validate([
@@ -128,19 +131,21 @@ class UserEditScreen extends Screen
             ],
         ]);
 
-        $userData = $request->collect('user')->except(['password', 'permissions', 'roles'])->toArray();
+        $userData = $request->get('user');
         
-        $isAdmin = $request->has('user.is_admin'); 
-        
+        $isAdmin = isset($userData['is_admin']) && $userData['is_admin'] == '1';
+
         $permissions = $isAdmin ? ['platform.index' => true] : [];
 
-        if ($request->filled('user.password')) {
-            $user->password = Hash::make($request->input('user.password'));
+        $user->name = $userData['name'];
+        $user->email = $userData['email'];
+        $user->is_admin = $isAdmin;
+        $user->permissions = $permissions;
+
+        if (!empty($userData['password'])) {
+            $user->password = Hash::make($userData['password']);
         }
 
-        $user->fill($userData);
-        $user->is_admin = $isAdmin; 
-        $user->permissions = $permissions;
         $user->save();
 
         Toast::info(__('User was saved.'));

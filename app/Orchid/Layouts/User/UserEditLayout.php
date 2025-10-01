@@ -6,6 +6,7 @@ namespace App\Orchid\Layouts\User;
 
 use Orchid\Screen\Field;
 use Orchid\Screen\Fields\Input;
+use Orchid\Screen\Fields\CheckBox;
 use Orchid\Screen\Fields\Select;
 use Orchid\Screen\Layouts\Rows;
 
@@ -32,13 +33,12 @@ class UserEditLayout extends Rows
                 ->title(__('Email'))
                 ->placeholder(__('Email')),
 
-            Select::make('user.is_admin')
-                ->options([
-                    0 => 'Regular User',
-                    1 => 'Administrator',
-                ])
-                ->title('User Role')
-                ->help('Set user access privileges.'),
+            CheckBox::make('user.is_admin')
+                ->value($this->query->get('user.is_admin'))
+                ->sendTrueOrFalse()
+                ->title('Administrator')
+                ->placeholder('Grant administrator privileges')
+                ->help('Administrators have full access to the system.'),
         ];
     }
 }
