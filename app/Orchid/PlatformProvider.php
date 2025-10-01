@@ -47,7 +47,6 @@ class PlatformProvider extends OrchidServiceProvider
             Menu::make(__('Users'))
                 ->icon('bs.people')
                 ->route('platform.systems.users')
-                ->permission('platform.systems.users')
                 ->title(__('Access Controls')),
         ];
     }

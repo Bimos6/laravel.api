@@ -90,19 +90,14 @@ class PostEditScreen extends Screen
                     ->help('Specify a short descriptive title for this post.')
                     ->required(),
 
-                TextArea::make('post.description')
-                    ->title('Description')
-                    ->rows(3)
-                    ->maxlength(200)
-                    ->placeholder('Brief description for preview'),
-
                 Relation::make('post.user_id')
                     ->title('Author')
                     ->fromModel(User::class, 'name')
                     ->required(),
 
-                Quill::make('post.text')
+                Textarea::make('post.text')
                     ->title('Main text')
+                    ->placeholder('Description for post')
                     ->required(),
 
             ])

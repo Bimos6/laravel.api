@@ -30,6 +30,11 @@ class PostListLayout extends Table
 
             TD::make('created_at', 'Created'),
             TD::make('updated_at', 'Last edit'),
+            TD::make('text', 'Text'),
+                TD::make('user_id', 'Author')
+                    ->render(function (Post $post) {
+                        return $post->user->name;
+                    }),
         ];
     }
 }

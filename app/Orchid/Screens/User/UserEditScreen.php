@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Orchid\Screens\User;
 
-use App\Orchid\Layouts\Role\RolePermissionLayout;
 use App\Orchid\Layouts\User\UserEditLayout;
 use App\Orchid\Layouts\User\UserPasswordLayout;
-use App\Orchid\Layouts\User\UserRoleLayout;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -35,7 +33,6 @@ class UserEditScreen extends Screen
      */
     public function query(User $user): iterable
     {
-        $user->load(['roles']);
 
         return [
             'user'       => $user,
@@ -61,9 +58,7 @@ class UserEditScreen extends Screen
 
     public function permission(): ?iterable
     {
-        return [
-            'platform.systems.users',
-        ];
+        return [];
     }
 
     /**
@@ -121,34 +116,9 @@ class UserEditScreen extends Screen
                         ->method('save')
                 ),
 
-            Layout::block(UserRoleLayout::class)
-                ->title(__('Roles'))
-                ->description(__('A Role defines a set of tasks a user assigned the role is allowed to perform.'))
-                ->commands(
-                    Button::make(__('Save'))
-                        ->type(Color::BASIC)
-                        ->icon('bs.check-circle')
-                        ->canSee($this->user->exists)
-                        ->method('save')
-                ),
-
-            Layout::block(RolePermissionLayout::class)
-                ->title(__('Permissions'))
-                ->description(__('Allow the user to perform some actions that are not provided for by his roles'))
-                ->commands(
-                    Button::make(__('Save'))
-                        ->type(Color::BASIC)
-                        ->icon('bs.check-circle')
-                        ->canSee($this->user->exists)
-                        ->method('save')
-                ),
-
         ];
     }
 
-    /**
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function save(User $user, Request $request)
     {
         $request->validate([
@@ -158,21 +128,20 @@ class UserEditScreen extends Screen
             ],
         ]);
 
-        $permissions = collect($request->get('permissions'))
-            ->map(fn ($value, $key) => [base64_decode($key) => $value])
-            ->collapse()
-            ->toArray();
+        $userData = $request->collect('user')->except(['password', 'permissions', 'roles'])->toArray();
+        
+        $isAdmin = $request->has('user.is_admin'); 
+        
+        $permissions = $isAdmin ? ['platform.index' => true] : [];
 
-        $user->when($request->filled('user.password'), function (Builder $builder) use ($request) {
-            $builder->getModel()->password = Hash::make($request->input('user.password'));
-        });
+        if ($request->filled('user.password')) {
+            $user->password = Hash::make($request->input('user.password'));
+        }
 
-        $user
-            ->fill($request->collect('user')->except(['password', 'permissions', 'roles'])->toArray())
-            ->forceFill(['permissions' => $permissions])
-            ->save();
-
-        $user->replaceRoles($request->input('user.roles'));
+        $user->fill($userData);
+        $user->is_admin = $isAdmin; 
+        $user->permissions = $permissions;
+        $user->save();
 
         Toast::info(__('User was saved.'));
 

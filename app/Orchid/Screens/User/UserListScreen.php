@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Orchid\Screens\User;
 
 use App\Orchid\Layouts\User\UserEditLayout;
-use App\Orchid\Layouts\User\UserFiltersLayout;
 use App\Orchid\Layouts\User\UserListLayout;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -26,7 +25,6 @@ class UserListScreen extends Screen
     {
         return [
             'users' => User::with('roles')
-                ->filters(UserFiltersLayout::class)
                 ->defaultSort('id', 'desc')
                 ->paginate(),
         ];
@@ -50,9 +48,7 @@ class UserListScreen extends Screen
 
     public function permission(): ?iterable
     {
-        return [
-            'platform.systems.users',
-        ];
+        return [];
     }
 
     /**
@@ -77,7 +73,6 @@ class UserListScreen extends Screen
     public function layout(): iterable
     {
         return [
-            UserFiltersLayout::class,
             UserListLayout::class,
 
             Layout::modal('editUserModal', UserEditLayout::class)
