@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Orchid\Layouts;
+namespace App\Orchid\Layouts\Post;
 
 use App\Models\Post;
 use Orchid\Screen\TD;

@@ -1,7 +1,7 @@
 <?php
 namespace App\Orchid\Screens\Post;
 
-use App\Orchid\Layouts\PostListLayout;
+use App\Orchid\Layouts\Post\PostListLayout;
 use App\Models\Post;
 use Orchid\Screen\Actions\Link;
 use Orchid\Screen\Screen;

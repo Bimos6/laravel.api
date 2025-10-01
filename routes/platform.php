@@ -50,23 +50,6 @@ Route::screen('users', UserListScreen::class)
         ->parent('platform.index')
         ->push(__('Users'), route('platform.systems.users')));
 
-Route::screen('roles/{role}/edit', RoleEditScreen::class)
-    ->name('platform.systems.roles.edit')
-    ->breadcrumbs(fn (Trail $trail, $role) => $trail
-        ->parent('platform.systems.roles')
-        ->push($role->name, route('platform.systems.roles.edit', $role)));
-
-Route::screen('roles/create', RoleEditScreen::class)
-    ->name('platform.systems.roles.create')
-    ->breadcrumbs(fn (Trail $trail) => $trail
-        ->parent('platform.systems.roles')
-        ->push(__('Create'), route('platform.systems.roles.create')));
-
-Route::screen('roles', RoleListScreen::class)
-    ->name('platform.systems.roles')
-    ->breadcrumbs(fn (Trail $trail) => $trail
-        ->parent('platform.index')
-        ->push(__('Roles'), route('platform.systems.roles')));
 
 Route::screen('posts', PostListScreen::class)
     ->name('platform.post.list');

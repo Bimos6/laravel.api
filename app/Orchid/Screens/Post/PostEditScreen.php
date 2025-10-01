@@ -8,7 +8,6 @@ use Orchid\Screen\Fields\Input;
 use Orchid\Screen\Fields\Quill;
 use Orchid\Screen\Fields\Relation;
 use Orchid\Screen\Fields\TextArea;
-use Orchid\Screen\Fields\Upload;
 use Orchid\Support\Facades\Layout;
 use Orchid\Screen\Actions\Button;
 use Orchid\Screen\Screen;
@@ -88,7 +87,8 @@ class PostEditScreen extends Screen
                 Input::make('post.title')
                     ->title('Title')
                     ->placeholder('Attractive but mysterious title')
-                    ->help('Specify a short descriptive title for this post.'),
+                    ->help('Specify a short descriptive title for this post.')
+                    ->required(),
 
                 TextArea::make('post.description')
                     ->title('Description')
@@ -96,12 +96,14 @@ class PostEditScreen extends Screen
                     ->maxlength(200)
                     ->placeholder('Brief description for preview'),
 
-                Relation::make('post.author')
+                Relation::make('post.user_id')
                     ->title('Author')
-                    ->fromModel(User::class, 'name'),
+                    ->fromModel(User::class, 'name')
+                    ->required(),
 
-                Quill::make('post.body')
-                    ->title('Main text'),
+                Quill::make('post.text')
+                    ->title('Main text')
+                    ->required(),
 
             ])
         ];
@@ -114,9 +116,16 @@ class PostEditScreen extends Screen
      */
     public function createOrUpdate(Request $request)
     {
-        $this->post->fill($request->get('post'))->save();
+        $postData = $request->get('post');
+        
+        // Если создается новый пост и не выбран автор, устанавливаем текущего пользователя
+        if (!$this->post->exists && empty($postData['user_id'])) {
+            $postData['user_id'] = auth()->id();
+        }
 
-        Alert::info('You have successfully created a post.');
+        $this->post->fill($postData)->save();
+
+        Alert::success($this->post->exists ? 'Post updated successfully.' : 'Post created successfully.');
 
         return redirect()->route('platform.post.list');
     }
