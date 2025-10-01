@@ -47,23 +47,23 @@ class UserListLayout extends Table
                     ])),
 
             TD::make('is_admin', __('Admin'))
+                ->sort()
                 ->render(fn (User $user) => $user->is_admin 
                     ? '<i class="text-success">●</i> Yes' 
                     : '<i class="text-danger">●</i> No'
                 )
-                ->align(TD::ALIGN_CENTER)
-                ->sort(),
+                ->align(TD::ALIGN_CENTER),
 
             TD::make('created_at', __('Created'))
+                ->sort()
                 ->usingComponent(DateTimeSplit::class)
                 ->align(TD::ALIGN_RIGHT)
-                ->defaultHidden()
-                ->sort(),
+                ->defaultHidden(),
 
             TD::make('updated_at', __('Last edit'))
+                ->sort()
                 ->usingComponent(DateTimeSplit::class)
-                ->align(TD::ALIGN_RIGHT)
-                ->sort(),
+                ->align(TD::ALIGN_RIGHT),
 
             TD::make(__('Actions'))
                 ->align(TD::ALIGN_CENTER)

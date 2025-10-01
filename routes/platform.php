@@ -56,4 +56,3 @@ Route::screen('posts', PostListScreen::class)
     
 Route::screen('post/{post?}', PostEditScreen::class)
     ->name('platform.post.edit');
-

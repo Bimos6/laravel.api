@@ -33,6 +33,11 @@ class UserPresenter extends Presenter implements Personable, Searchable
      */
     public function subTitle(): string
     {
+        // Используем поле is_admin вместо ролей
+        if ($this->entity->is_admin) {
+            return 'Administrator';
+        }
+
         $roles = $this->entity->roles->pluck('name')->implode(' / ');
 
         return (string) Str::of($roles)
