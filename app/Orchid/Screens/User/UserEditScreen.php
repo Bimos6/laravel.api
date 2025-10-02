@@ -8,6 +8,7 @@ use App\Orchid\Layouts\User\UserEditLayout;
 use App\Orchid\Layouts\User\UserPasswordLayout;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use App\Http\Requests\AdminUserSaveRequest;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Orchid\Access\Impersonation;
@@ -122,15 +123,8 @@ class UserEditScreen extends Screen
     /**
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function save(User $user, Request $request)
+    public function save(User $user, AdminUserSaveRequest $request)
     {
-        $request->validate([
-            'user.email' => [
-                'required',
-                Rule::unique(User::class, 'email')->ignore($user),
-            ],
-        ]);
-
         $userData = $request->get('user');
         
         $isAdmin = isset($userData['is_admin']) && $userData['is_admin'] == '1';

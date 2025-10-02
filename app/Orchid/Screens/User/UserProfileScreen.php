@@ -7,6 +7,8 @@ namespace App\Orchid\Screens\User;
 use App\Orchid\Layouts\User\ProfilePasswordLayout;
 use App\Orchid\Layouts\User\UserEditLayout;
 use Illuminate\Http\Request;
+use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Requests\ProfileChangePasswordRequest;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Orchid\Access\Impersonation;
@@ -98,35 +100,18 @@ class UserProfileScreen extends Screen
         ];
     }
 
-    public function save(Request $request): void
+    public function save(ProfileUpdateRequest $request): void
     {
-        $request->validate([
-            'user.name'  => 'required|string',
-            'user.email' => [
-                'required',
-                Rule::unique(User::class, 'email')->ignore($request->user()),
-            ],
-        ]);
-
-        $request->user()
-            ->fill($request->get('user'))
-            ->save();
-
+        $request->user()->fill($request->get('user'))->save();
         Toast::info(__('Profile updated.'));
     }
 
-    public function changePassword(Request $request): void
+    public function changePassword(ProfileChangePasswordRequest $request): void
     {
         $guard = config('platform.guard', 'web');
-        $request->validate([
-            'old_password' => 'required|current_password:'.$guard,
-            'password'     => 'required|confirmed|different:old_password',
-        ]);
-
         tap($request->user(), function ($user) use ($request) {
             $user->password = Hash::make($request->get('password'));
         })->save();
-
         Toast::info(__('Password changed.'));
     }
 }

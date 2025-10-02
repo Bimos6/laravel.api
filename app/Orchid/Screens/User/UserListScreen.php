@@ -7,6 +7,7 @@ namespace App\Orchid\Screens\User;
 use App\Orchid\Layouts\User\UserEditLayout;
 use App\Orchid\Layouts\User\UserListLayout;
 use Illuminate\Http\Request;
+use App\Http\Requests\AdminUserModalSaveRequest;
 use Illuminate\Validation\Rule;
 use App\Models\User;
 use Orchid\Screen\Actions\Link;
@@ -92,17 +93,9 @@ class UserListScreen extends Screen
         ];
     }
 
-    public function saveUser(Request $request, User $user): void
+    public function saveUser(AdminUserModalSaveRequest $request, User $user): void
     {
-        $request->validate([
-            'user.email' => [
-                'required',
-                Rule::unique(User::class, 'email')->ignore($user),
-            ],
-        ]);
-
         $user->fill($request->input('user'))->save();
-
         Toast::info(__('User was saved.'));
     }
 
