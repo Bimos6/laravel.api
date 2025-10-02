@@ -4,13 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\Post;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class PostTest extends TestCase
 {
-    use RefreshDatabase; 
-
     protected $user;
     protected $token;
 
@@ -21,24 +18,22 @@ class PostTest extends TestCase
         $this->token = $this->user->createToken('test')->plainTextToken;
     }
 
-    /** @test */
-    public function authenticated_user_can_create_post()
+    public function test_authenticated_user_can_create_post()
     {
         $postData = [
-            'title' => 'Test Post',
+            'title' => 'Test Post ' . uniqid(),
             'text' => 'Test Content'
         ];
 
         $this->withHeader('Authorization', 'Bearer ' . $this->token)
             ->postJson('/api/posts', $postData)
             ->assertStatus(201)
-            ->assertJson(['title' => 'Test Post']);
+            ->assertJson(['title' => $postData['title']]);
 
-        $this->assertDatabaseHas('posts', ['title' => 'Test Post']);
+        $this->assertDatabaseHas('posts', ['title' => $postData['title']]);
     }
 
-    /** @test */
-    public function unauthenticated_user_cannot_create_post()
+    public function test_unauthenticated_user_cannot_create_post()
     {
         $this->postJson('/api/posts', [
             'title' => 'Test',
@@ -46,24 +41,23 @@ class PostTest extends TestCase
         ])->assertStatus(401);
     }
 
-    /** @test */
-    public function user_can_get_all_posts()
+    public function test_user_can_get_all_posts()
     {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
         
-        Post::create(['title' => 'Post 1', 'text' => 'Content 1', 'user_id' => $user1->id]);
-        Post::create(['title' => 'Post 2', 'text' => 'Content 2', 'user_id' => $user2->id]);
+        $post1 = Post::create(['title' => 'Post 1 ' . uniqid(), 'text' => 'Content 1', 'user_id' => $user1->id]);
+        $post2 = Post::create(['title' => 'Post 2 ' . uniqid(), 'text' => 'Content 2', 'user_id' => $user2->id]);
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
             ->getJson('/api/posts')
             ->assertStatus(200);
 
-        $response->assertJsonCount(2, 'data');
+        $response->assertJsonFragment(['title' => $post1->title])
+                 ->assertJsonFragment(['title' => $post2->title]);
     }
 
-    /** @test */
-    public function user_can_get_their_posts()
+    public function test_user_can_get_their_posts()
     {
         $myUniqueTitle = 'My Unique Post ' . uniqid();
         $otherUniqueTitle = 'Other Unique Post ' . uniqid();
@@ -81,31 +75,16 @@ class PostTest extends TestCase
             'user_id' => $otherUser->id
         ]);
 
-        echo "=== DEBUG ===\n";
-        echo "Current user ID: {$this->user->id}\n";
-        echo "Other user ID: {$otherUser->id}\n";
-        
-        $allPosts = Post::all();
-        echo "All posts in DB: " . $allPosts->count() . "\n";
-        foreach ($allPosts as $post) {
-            echo "Post: {$post->title}, user_id: {$post->user_id}\n";
-        }
-
         $response = $this->withHeader('Authorization', 'Bearer ' . $this->token)
             ->getJson('/api/my-posts')
             ->assertStatus(200);
 
-        $responseData = $response->json();
-        echo "API returned: " . count($responseData['data']) . " posts\n";
-        foreach ($responseData['data'] as $post) {
-            echo "API Post: {$post['title']}, user_id: {$post['user_id']}\n";
-        }
-        echo "=============\n";
-
         $postsData = $response->json('data');
+        
         foreach ($postsData as $post) {
-            $this->assertEquals($this->user->id, $post['user_id'], 
-                "Пост '{$post['title']}' принадлежит пользователю {$post['user_id']}, а должен {$this->user->id}");
+            $this->assertEquals($this->user->id, $post['user_id']);
         }
+        
+        $response->assertJsonFragment(['title' => $myUniqueTitle]);
     }
 }
